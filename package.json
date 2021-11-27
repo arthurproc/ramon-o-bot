@@ -1,0 +1,32 @@
+{
+  "name": "ramon-o-bot",
+  "version": "1.0.0",
+  "description": "Ramon, o bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arthurproc/ramon-o-bot.git"
+  },
+  "author": "@arthurproc",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arthurproc/ramon-o-bot/issues"
+  },
+  "homepage": "https://github.com/arthurproc/ramon-o-bot#readme",
+  "dependencies": {
+    "@discordjs/builders": "^0.8.2",
+    "@discordjs/rest": "0.1.0-canary.0",
+    "discord-api-types": "^0.24.0",
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.3.0",
+    "nodemon": "^2.0.15"
+  }
+}
