@@ -18,12 +18,12 @@ for (const file of commandFiles) {
 
 client.on('ready', () => {
 	console.log('Ramon ta on!!!');
-	const guildIds = client.guilds.cache.map(guild => guild.id);
-	const commands = commandList.map(command => command.toJSON());
+	// const guildIds = client.guilds.cache.map(guild => guild.id);
+	// const commands = commandList.map(command => command.toJSON());
 
-	for (const guildId of guildIds) {
-		registerCommands(guildId, commands);
-	}
+	// for (const guildId of guildIds) {
+	// 	registerCommands(guildId, commands);
+	// }
 });
 
 client.on('interactionCreate', async interaction => {

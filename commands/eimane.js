@@ -1,5 +1,4 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-// const { wait } = require('../helpers');
 const { join } = require('path');
 const { joinVoiceChannel, createAudioResource } = require('@discordjs/voice');
 const { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus } = require('@discordjs/voice');
