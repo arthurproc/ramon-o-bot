@@ -4,11 +4,6 @@ const { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus } = require('
 const ytdl = require('ytdl-core');
 const { getVideos, getVideoStream } = require('../helpers/youtube');
 
-const opts = {
-  maxResults: 10,
-  key: 'AIzaSyA5sspBUsshhctlRwT-r9Lnab-B5jk0ZFc'
-};
-
 async function probeAndCreateResource(readableStream) {
 	const { stream, type } = await demuxProbe(readableStream);
 	return createAudioResource(stream, { inputType: type });
