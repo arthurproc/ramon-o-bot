@@ -1,67 +1,81 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { join } = require('path');
-const { joinVoiceChannel, createAudioResource } = require('@discordjs/voice');
+const { joinVoiceChannel, demuxProbe, createAudioResource } = require('@discordjs/voice');
 const { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus } = require('@discordjs/voice');
-var Downloader = require("../helpers/downloader");
+const ytdl = require('ytdl-core');
+const { getVideos, getVideoStream } = require('../helpers/youtube');
+
+const opts = {
+  maxResults: 10,
+  key: 'AIzaSyA5sspBUsshhctlRwT-r9Lnab-B5jk0ZFc'
+};
+
+async function probeAndCreateResource(readableStream) {
+	const { stream, type } = await demuxProbe(readableStream);
+	return createAudioResource(stream, { inputType: type });
+}
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('youtube')
-		.setDescription('Baixa um video do youtube'),
+		.setDescription('Baixa um video do youtube')
+		.addStringOption(option => option.setName('search').setDescription('String para pesquisar').setRequired(true)),
 	async execute(interaction) {
+		const channel = interaction.member.voice;
 
-		// const channel = interaction.member.voice;
-		// const connection = joinVoiceChannel({
-		// 	channelId: channel.channelId,
-		// 	guildId: channel.guild.id,
-		// 	adapterCreator: channel.guild.voiceAdapterCreator,
-		// });
+		const connection = joinVoiceChannel({
+			channelId: channel.channelId,
+			guildId: channel.guild.id,
+			adapterCreator: channel.guild.voiceAdapterCreator,
+		});
+		
 		try {
-      var dl = new Downloader();
-      var i = 0;
+			const searchString = interaction.options.getString('search');
 
-      dl.downloadMp3({videoId: "dQw4w9WgXcQ"}, function(err,res){
-			    console.log("baixando");
-          i++;
-          if(err)
-              throw err;
-          else{
-              console.log("Song "+ i + " was downloaded: " + res.file);
-          }
-      });
+			let videoLink = '';
+
+			if (!ytdl.validateID(searchString) && !ytdl.validateURL(searchString)) {
+				const videos = await getVideos(searchString);
+				videoLink = videos[0].link;
+			}
+			else {
+				videoLink = searchString;
+			}
+
+			let info = await ytdl.getInfo(videoLink);
+			const ytStream = getVideoStream(videoLink);
+
 			const player = createAudioPlayer({
 				behaviors: {
 					noSubscriber: NoSubscriberBehavior.Pause,
 				},
 			});
-			// Will use FFmpeg with volume control enabled
-			// const resource = createAudioResource(join(__dirname, '../audio_files/eimane.mp3'), { inlineVolume: true });
-			// resource.volume.setVolume(1);
-			// Subscribe the connection to the audio player (will play audio on the voice connection)
-			// player.play(resource);
 
-			// connection.subscribe(player);
+			const resource = await probeAndCreateResource(ytStream);
+			player.play(resource);
+			
+			connection.subscribe(player);
 
-			// player.on(AudioPlayerStatus.Paused, () => {
-			// 	console.log('Ta pausado!');
-			// });
+			player.on(AudioPlayerStatus.Paused, () => {
+				console.log('Ta pausado!');
+			});
 
-			// player.on(AudioPlayerStatus.Playing, () => {
-			// 	console.log('Ta tocando!');
-			// });
+			player.on(AudioPlayerStatus.Playing, () => {
+				console.log('Ta tocando!');
+				interaction.reply(`Tocando: ${info.videoDetails.title} no youtube`);
+			});
 
-			// player.on(AudioPlayerStatus.Idle, () => {
-			// 	connection.destroy();
-			// });
+			player.on(AudioPlayerStatus.Idle, () => {
+				player.stop();
+				connection.destroy();
+			});
 
+			player.on('error', error => {
+				console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+				player.play(getNextResource());
+			});
 		}
 		catch (error) {
-			console.log(error);
+			return interaction.reply('Não encontrei o video ou link');
 		}
-		// finally {
-		// 	player.stop();
-		// 	connection.destroy();
-		// }
-		return interaction.reply('Ei, pish. Ei mané!! Você acha que o seu som é bom??!!');
 	},
 };
